@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require 'date'
@@ -17,8 +18,8 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-puts "#{Date::MONTHNAMES[month]} #{year}"
-puts 'Su Mo Tu We Th Fr Sa'
+puts "#{year}年#{month}月"
+puts "日 月 火 水 木 金 土"
 
 first_day = Date.new(year, month, 1)
 
