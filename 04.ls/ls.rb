@@ -1,6 +1,21 @@
 # frozen_string_literal: true
 
-files = Dir.glob('*')
+require 'optparse'
+options = {}
+OptionParser.new do |opts|
+  opts.on('-a') do
+    options[:all] = true
+  end
+end.parse!
+
+if options[:all]
+  files = Dir.glob('*', File::FNM_DOTMATCH)
+  files << '..'
+else
+  files = Dir.glob('*')
+end
+files.sort!
+
 COLUMNS = 3
 
 def calculate_rows(files, columns)
