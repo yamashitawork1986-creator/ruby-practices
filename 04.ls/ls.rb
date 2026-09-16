@@ -8,13 +8,8 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-if options[:all]
-  files = Dir.glob('*', File::FNM_DOTMATCH)
-  files << '..'
-else
-  files = Dir.glob('*')
-end
-files.sort!
+flags = options[:all] ? File::FNM_DOTMATCH : 0
+files = Dir.glob('*', flags)
 
 COLUMNS = 3
 
