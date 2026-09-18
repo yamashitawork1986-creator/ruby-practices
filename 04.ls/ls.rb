@@ -1,6 +1,18 @@
 # frozen_string_literal: true
 
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+  opts.on('-r') do
+    options[:reverse] = true
+  end
+end.parse!
+
 files = Dir.glob('*')
+files.reverse! if options[:reverse]
+
 COLUMNS = 3
 
 def calculate_rows(files, columns)
