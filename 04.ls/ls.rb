@@ -1,15 +1,22 @@
 # frozen_string_literal: true
 
 require 'optparse'
+
 options = {}
+
 OptionParser.new do |opts|
   opts.on('-a') do
     options[:all] = true
+  end
+
+  opts.on('-r') do
+    options[:reverse] = true
   end
 end.parse!
 
 flags = options[:all] ? File::FNM_DOTMATCH : 0
 files = Dir.glob('*', flags)
+files.reverse! if options[:reverse]
 
 COLUMNS = 3
 
