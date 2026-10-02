@@ -41,24 +41,16 @@ def permission_char(mode, mask, char)
 end
 
 def file_type_char(stat)
-  case stat.ftype
-  when 'file'
-    '-'
-  when 'directory'
-    'd'
-  when 'link'
-    'l'
-  when 'characterSpecial'
-    'c'
-  when 'blockSpecial'
-    'b'
-  when 'fifo'
-    'p'
-  when 'socket'
-    's'
-  else
-    '?'
-  end
+  file_types = {
+    'file' => '-',
+    'directory' => 'd',
+    'link' => 'l',
+    'characterSpecial' => 'c',
+    'blockSpecial' => 'b',
+    'fifo' => 'p',
+    'socket' => 's'
+  }
+  file_types.fetch(stat.ftype, '?')
 end
 
 def format_permissions(stat)
