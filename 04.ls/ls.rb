@@ -71,14 +71,18 @@ if options[:long]
   total = files.sum { |file| File.lstat(file).blocks }
   puts "total #{total}"
 
+  nlink_width = files.map { |file| File.lstat(file).nlink.to_s.length }.max
+  owner_width = files.map { |file| Etc.getpwuid(File.lstat(file).uid).name.length }.max
+  group_width = files.map { |file| Etc.getgrgid(File.lstat(file).gid).name.length }.max
   size_width = files.map { |file| File.lstat(file).size.to_s.length }.max
   files.each do |file|
     stat = File.lstat(file)
     permission = format_permissions(stat)
     owner = Etc.getpwuid(stat.uid).name
     group = Etc.getgrgid(stat.gid).name
+    nlink = stat.nlink.to_s.rjust(nlink_width)
     mtime = stat.mtime.strftime('%b %e %H:%M')
-    puts "#{permission} #{stat.nlink} #{owner} #{group} #{stat.size.to_s.rjust(size_width)} #{mtime} #{file}"
+    puts "#{permission} #{nlink} #{owner.ljust(owner_width)} #{group.ljust(group_width)} #{stat.size.to_s.rjust(size_width)} #{mtime} #{file}"
   end
 else
   rows.times do |row|
