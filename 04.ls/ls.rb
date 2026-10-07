@@ -68,18 +68,30 @@ end
 column_width = calculate_column_width(files)
 
 if options[:long]
-  total = files.sum { |file| File.lstat(file).blocks }
+  file_infos = files.map do |file|
+    stat = File.lstat(file)
+
+    {
+      file: file,
+      stat: stat,
+      owner: Etc.getpwuid(stat.uid).name,
+      group: Etc.getgrgid(stat.gid).name
+    }
+  end
+
+  total = file_infos.sum { |file_info| file_info[:stat].blocks }
   puts "total #{total}"
 
-  nlink_width = files.map { |file| File.lstat(file).nlink.to_s.length }.max
-  owner_width = files.map { |file| Etc.getpwuid(File.lstat(file).uid).name.length }.max
-  group_width = files.map { |file| Etc.getgrgid(File.lstat(file).gid).name.length }.max
-  size_width = files.map { |file| File.lstat(file).size.to_s.length }.max
-  files.each do |file|
-    stat = File.lstat(file)
+  nlink_width = file_infos.map { |file_info| file_info[:stat].nlink.to_s.length }.max
+  owner_width = file_infos.map { |file_info| file_info[:owner].length }.max
+  group_width = file_infos.map { |file_info| file_info[:group].length }.max
+  size_width = file_infos.map { |file_info| file_info[:stat].size.to_s.length }.max
+  file_infos.each do |file_info|
+    file = file_info[:file]
+    stat = file_info[:stat]
     permission = format_permissions(stat)
-    owner = Etc.getpwuid(stat.uid).name
-    group = Etc.getgrgid(stat.gid).name
+    owner = file_info[:owner]
+    group = file_info[:group]
     nlink = stat.nlink.to_s.rjust(nlink_width)
     mtime = stat.mtime.strftime('%b %e %H:%M')
     puts "#{permission} #{nlink} #{owner.ljust(owner_width)} #{group.ljust(group_width)} #{stat.size.to_s.rjust(size_width)} #{mtime} #{file}"
