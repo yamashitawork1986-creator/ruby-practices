@@ -73,28 +73,34 @@ if options[:long]
 
     {
       file: file,
-      stat: stat,
+      permission: format_permissions(stat),
+      nlink: stat.nlink,
       owner: Etc.getpwuid(stat.uid).name,
-      group: Etc.getgrgid(stat.gid).name
+      group: Etc.getgrgid(stat.gid).name,
+      size: stat.size,
+      mtime: stat.mtime,
+      blocks: stat.blocks
     }
   end
 
-  total = file_infos.sum { |file_info| file_info[:stat].blocks }
+  total = file_infos.sum { |file_info| file_info[:blocks] }
   puts "total #{total}"
 
-  nlink_width = file_infos.map { |file_info| file_info[:stat].nlink.to_s.length }.max
+  nlink_width = file_infos.map { |file_info| file_info[:nlink].to_s.length }.max
   owner_width = file_infos.map { |file_info| file_info[:owner].length }.max
   group_width = file_infos.map { |file_info| file_info[:group].length }.max
-  size_width = file_infos.map { |file_info| file_info[:stat].size.to_s.length }.max
+  size_width = file_infos.map { |file_info| file_info[:size].to_s.length }.max
+
   file_infos.each do |file_info|
     file = file_info[:file]
-    stat = file_info[:stat]
-    permission = format_permissions(stat)
+    permission = file_info[:permission]
     owner = file_info[:owner]
     group = file_info[:group]
-    nlink = stat.nlink.to_s.rjust(nlink_width)
-    mtime = stat.mtime.strftime('%b %e %H:%M')
-    puts "#{permission} #{nlink} #{owner.ljust(owner_width)} #{group.ljust(group_width)} #{stat.size.to_s.rjust(size_width)} #{mtime} #{file}"
+    nlink = file_info[:nlink].to_s.rjust(nlink_width)
+    size = file_info[:size].to_s.rjust(size_width)
+    mtime = file_info[:mtime].strftime('%b %e %H:%M')
+
+    puts "#{permission} #{nlink} #{owner.ljust(owner_width)} #{group.ljust(group_width)} #{size} #{mtime} #{file}"
   end
 else
   rows.times do |row|
