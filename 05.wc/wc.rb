@@ -2,6 +2,22 @@
 
 require 'optparse'
 
+def count_text(text)
+  line_count = text.count("\n")
+  word_count = text.split.length
+  byte_count = text.bytesize
+
+  [line_count, word_count, byte_count]
+end
+
+def select_counts(counts, options)
+  results = []
+  results << counts[0] if options[:lines]
+  results << counts[1] if options[:words]
+  results << counts[2] if options[:bytes]
+  results
+end
+
 options = {}
 
 OptionParser.new do |opts|
@@ -10,71 +26,35 @@ OptionParser.new do |opts|
   opts.on('-c') { options[:bytes] = true }
 end.parse!
 
+if options.empty?
+  options[:lines] = true
+  options[:words] = true
+  options[:bytes] = true
+end
+
 total_lines = 0
 total_words = 0
 total_bytes = 0
 
 if ARGV.empty?
   text = $stdin.read
+  results = select_counts(count_text(text), options)
 
-  line_count = text.count("\n")
-  word_count = text.split.length
-  byte_count = text.bytesize
-
-  results = []
-  results << line_count if options[:lines]
-  results << word_count if options[:words]
-  results << byte_count if options[:bytes]
-
-  if results.empty?
-    results << line_count
-    results << word_count
-    results << byte_count
-  end
-
-  puts results.join(' ')
+  puts results.map { |count| format('%7d', count) }.join(' ')
 end
 
 ARGV.each do |filename|
   text = File.read(filename)
-  line_count = text.count("\n")
+  line_count, word_count, byte_count = count_text(text)
+
   total_lines += line_count
-
-  word_count = text.split.length
   total_words += word_count
-
-  byte_count = text.bytesize
   total_bytes += byte_count
 
-  results = []
-
-  results << line_count if options[:lines]
-
-  results << word_count if options[:words]
-
-  results << byte_count if options[:bytes]
-
-  if results.empty?
-    results << line_count
-    results << word_count
-    results << byte_count
-  end
-
-  puts "#{results.join(' ')} #{filename}"
+  results = select_counts([line_count, word_count, byte_count], options)
+  puts "#{results.map { |count| format('%7d', count) }.join(' ')} #{filename}"
 end
 
-total_results = []
+total_results = select_counts([total_lines, total_words, total_bytes], options)
 
-total_results << total_lines if options[:lines]
-
-total_results << total_words if options[:words]
-
-total_results << total_bytes if options[:bytes]
-
-if total_results.empty?
-  total_results << total_lines
-  total_results << total_words
-  total_results << total_bytes
-end
-
-puts "#{total_results.join(' ')} total" if ARGV.length > 1
+puts "#{total_results.map { |count| format('%7d', count) }.join(' ')} total" if ARGV.length > 1
